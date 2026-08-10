@@ -1,0 +1,16 @@
+{
+  "name": "attachment-compass",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal Q&A app about avoidant-attachment relationships, grounded in the Guided Awareness knowledge base.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0"
+  }
+}

@@ -1,4 +1,5 @@
-/* Attachment Compass — local front-end. No dependencies; model text is always
+/* Attachment Compass — front-end. Conversations live entirely in THIS browser
+   (localStorage); the server only answers questions. Model text is always
    rendered through the safe DOM-building markdown renderer below. */
 "use strict";
 
@@ -6,13 +7,46 @@ const $ = (id) => document.getElementById(id);
 
 const state = {
   view: "home",              // "home" | "library" | situationId
-  situations: [],
+  situations: [],            // summaries (computed from store)
   content: null,
   messages: [],              // for the open thread
   asking: null,              // { situationId, question, answer }
-  editingId: null,           // situation being edited in the modal
-  pendingAsk: null,          // question queued behind the create modal
+  editingId: null,
+  pendingAsk: null,
+  locked: false,
 };
+
+/* ── local store ──────────────────────────────────────────── */
+const STORE_KEY = "attachment-compass-v1";
+const AUTH_KEY = "attachment-compass-auth";
+
+function loadStore() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY) ?? "");
+    if (raw && Array.isArray(raw.situations) && typeof raw.messages === "object") return raw;
+  } catch {}
+  return { situations: [], messages: {} };
+}
+
+function saveStore(store) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+}
+
+function refreshState() {
+  const store = loadStore();
+  state.situations = store.situations
+    .map((s) => ({ ...s, messageCount: (store.messages[s.id] ?? []).length }))
+    .sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
+  renderSidebar();
+  renderTargetPicker();
+}
+
+function situationById(id) {
+  return state.situations.find((s) => s.id === id);
+}
+
+const newId = () =>
+  (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
 /* ── markdown (safe DOM building) ─────────────────────────── */
 function resolveHref(href) {
@@ -95,12 +129,17 @@ function renderMarkdown(text) {
     list = null;
   };
 
+  let listGap = false; // blank line seen while a list is open — the list may continue
   for (const rawLine of lines) {
     const line = rawLine.trim();
-    if (line === "") { flushParagraph(); flushList(); continue; }
+    if (line === "") {
+      flushParagraph();
+      if (list) listGap = true; // keep the list open until we see what follows
+      continue;
+    }
     const heading = /^(#{1,4})\s+(.*)$/.exec(line);
     if (heading) {
-      flushParagraph(); flushList();
+      flushParagraph(); flushList(); listGap = false;
       const h = document.createElement("p");
       h.className = "md-h";
       inlineNodes(heading[2]).forEach((n) => h.appendChild(n));
@@ -112,14 +151,17 @@ function renderMarkdown(text) {
     if (ordered || unordered) {
       flushParagraph();
       const isOrdered = ordered != null;
+      // Continue a same-type list across blank lines so numbering doesn't reset.
       if (!list || list.ordered !== isOrdered) { flushList(); list = { ordered: isOrdered, items: [] }; }
+      listGap = false;
       list.items.push((ordered ? ordered[1] : unordered[1]) ?? "");
       continue;
     }
-    if (list && list.items.length > 0) {
+    if (list && !listGap && list.items.length > 0) {
       list.items[list.items.length - 1] += " " + line;
       continue;
     }
+    if (listGap) { flushList(); listGap = false; }
     paragraph.push(line);
   }
   flushParagraph(); flushList();
@@ -135,44 +177,58 @@ function extractSources(text) {
 }
 
 /* ── api ──────────────────────────────────────────────────── */
-async function api(path, options) {
-  const res = await fetch(path, options);
+async function api(path) {
+  const res = await fetch(path);
   const body = await res.json().catch(() => null);
   if (!res.ok) throw new Error(body?.error ?? "Something went wrong.");
   return body;
 }
 
-async function refreshState() {
-  const data = await api("/api/state");
-  state.situations = data.situations;
-  renderSidebar();
-  renderTargetPicker();
-}
-
-async function openThread(id) {
-  state.view = id;
-  state.messages = await api(`/api/messages/${encodeURIComponent(id)}`);
-  render();
-  scrollThread(false);
+function authHeaders() {
+  const token = localStorage.getItem(AUTH_KEY);
+  return token ? { authorization: `Bearer ${token}` } : {};
 }
 
 /* ── ask flow ─────────────────────────────────────────────── */
 async function ask(situationId, question) {
   const q = question.trim();
-  if (!q || state.asking) return;
+  const situation = situationById(situationId);
+  if (!q || !situation || state.asking) return;
   state.asking = { situationId, question: q, answer: "" };
   $("home-question").value = "";
   $("thread-question").value = "";
-  if (state.view !== situationId) await openThread(situationId);
+  const store = loadStore();
+  const history = (store.messages[situationId] ?? []).map((m) => ({
+    role: m.role,
+    content: m.content,
+  }));
+  if (state.view !== situationId) openThread(situationId);
   else render();
   scrollThread(true);
 
   try {
     const res = await fetch("/api/ask", {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ situationId, question: q }),
+      headers: { "content-type": "application/json", ...authHeaders() },
+      body: JSON.stringify({
+        question: q,
+        situation: {
+          name: situation.name,
+          profile: situation.profile,
+          partnerStyle: situation.partnerStyle,
+          stage: situation.stage,
+        },
+        history,
+      }),
     });
+    if (res.status === 401) {
+      state.asking = null;
+      $("home-question").value = q;
+      $("thread-question").value = q;
+      showLock();
+      render();
+      return;
+    }
     if (!res.ok || (res.headers.get("content-type") ?? "").includes("application/json")) {
       const body = await res.json().catch(() => null);
       throw new Error(body?.error ?? "The question could not be answered.");
@@ -188,23 +244,52 @@ async function ask(situationId, question) {
         scrollThread(true);
       }
     }
+    persistExchange(situationId, q, state.asking?.answer ?? "");
   } catch (error) {
-    if (state.asking) {
-      state.asking.answer =
-        (state.asking.answer ? state.asking.answer + "\n\n" : "") +
-        `**Something went wrong:** ${error.message}`;
-      renderLiveAnswer();
-    }
+    persistExchange(
+      situationId,
+      q,
+      (state.asking?.answer ? state.asking.answer + "\n\n" : "") +
+        `**Something went wrong:** ${error.message}`,
+    );
   } finally {
-    const target = state.asking?.situationId;
     state.asking = null;
-    if (target) {
-      try { state.messages = await api(`/api/messages/${encodeURIComponent(target)}`); } catch {}
-      await refreshState().catch(() => {});
-      if (state.view === target) render();
-      scrollThread(false);
+    refreshState();
+    if (state.view === situationId) {
+      state.messages = loadStore().messages[situationId] ?? [];
+      render();
     }
+    scrollThread(false);
   }
+}
+
+function persistExchange(situationId, question, answer) {
+  const store = loadStore();
+  if (!store.situations.some((s) => s.id === situationId)) return;
+  const now = new Date().toISOString();
+  const thread = store.messages[situationId] ?? (store.messages[situationId] = []);
+  thread.push({ id: newId(), role: "user", content: question, createdAt: now });
+  thread.push({
+    id: newId(),
+    role: "assistant",
+    content: answer.trim() || "_No answer arrived — please try again._",
+    createdAt: now,
+  });
+  const situation = store.situations.find((s) => s.id === situationId);
+  if (situation) situation.updatedAt = now;
+  saveStore(store);
+}
+
+/* ── lock screen ──────────────────────────────────────────── */
+function showLock() {
+  state.locked = true;
+  $("lock").classList.remove("hidden");
+  $("lock-input").focus();
+}
+
+function hideLock() {
+  state.locked = false;
+  $("lock").classList.add("hidden");
 }
 
 /* ── rendering ────────────────────────────────────────────── */
@@ -371,8 +456,15 @@ function assistantCard(content, streaming) {
   return wrap;
 }
 
+function openThread(id) {
+  state.view = id;
+  state.messages = loadStore().messages[id] ?? [];
+  render();
+  scrollThread(false);
+}
+
 function renderThread() {
-  const situation = state.situations.find((s) => s.id === state.view);
+  const situation = situationById(state.view);
   if (!situation) { showView("home"); return; }
   $("thread-name").textContent = situation.name;
   $("thread-meta").textContent = [situation.stage, situation.partnerStyle].filter(Boolean).join(" · ");
@@ -451,7 +543,7 @@ function render() {
 /* ── modal ────────────────────────────────────────────────── */
 function openModal(situationId) {
   state.editingId = situationId;
-  const s = state.situations.find((x) => x.id === situationId);
+  const s = situationById(situationId);
   $("modal-title").textContent = s ? "Edit situation" : "New situation";
   $("modal-save").textContent = s ? "Save changes" : "Create situation";
   $("f-name").value = s?.name ?? "";
@@ -469,45 +561,36 @@ function closeModal() {
   state.pendingAsk = null;
 }
 
-async function saveModal(event) {
+function saveModal(event) {
   event.preventDefault();
+  const name = $("f-name").value.trim().slice(0, 80);
+  if (!name) return;
   const payload = {
-    name: $("f-name").value,
+    name,
     stage: $("f-stage").value,
     partnerStyle: $("f-style").value,
-    profile: $("f-profile").value,
+    profile: $("f-profile").value.trim().slice(0, 4000),
   };
-  $("modal-save").disabled = true;
-  try {
-    let situation;
-    if (state.editingId) {
-      situation = await api(`/api/situations/${encodeURIComponent(state.editingId)}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      situation = await api("/api/situations", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    }
-    const pending = state.pendingAsk;
-    state.pendingAsk = null;
-    $("modal").classList.add("hidden");
-    state.editingId = null;
-    await refreshState();
-    if (pending) await ask(situation.id, pending);
-    else if (state.view === situation.id) render();
-    else await openThread(situation.id);
-  } catch (error) {
-    const el = $("form-error");
-    el.textContent = error.message;
-    el.classList.remove("hidden");
-  } finally {
-    $("modal-save").disabled = false;
+  const store = loadStore();
+  let situation;
+  const now = new Date().toISOString();
+  if (state.editingId) {
+    situation = store.situations.find((s) => s.id === state.editingId);
+    if (situation) Object.assign(situation, payload, { updatedAt: now });
+  } else {
+    situation = { id: newId(), ...payload, createdAt: now, updatedAt: now };
+    store.situations.push(situation);
+    store.messages[situation.id] = [];
   }
+  saveStore(store);
+  const pending = state.pendingAsk;
+  state.pendingAsk = null;
+  $("modal").classList.add("hidden");
+  state.editingId = null;
+  refreshState();
+  if (pending && situation) ask(situation.id, pending);
+  else if (situation && state.view === situation.id) { state.messages = loadStore().messages[situation.id] ?? []; render(); }
+  else if (situation) openThread(situation.id);
 }
 
 /* ── wiring ───────────────────────────────────────────────── */
@@ -539,24 +622,33 @@ function init() {
     if (e.target.value === "__new__") openModal(null);
   });
   $("edit-situation").onclick = () => openModal(state.view);
-  $("delete-situation").onclick = async () => {
-    const s = state.situations.find((x) => x.id === state.view);
+  $("delete-situation").onclick = () => {
+    const s = situationById(state.view);
     if (!s) return;
     if (!confirm(`Delete "${s.name}" and its whole conversation?`)) return;
-    await api(`/api/situations/${encodeURIComponent(s.id)}`, { method: "DELETE" });
-    await refreshState();
+    const store = loadStore();
+    store.situations = store.situations.filter((x) => x.id !== s.id);
+    delete store.messages[s.id];
+    saveStore(store);
+    refreshState();
     showView("home");
   };
   $("modal-close").onclick = closeModal;
   $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
   $("situation-form").addEventListener("submit", saveModal);
-
-  Promise.all([
-    refreshState(),
-    api("/api/content").then((c) => { state.content = c; renderContent(); }),
-  ]).then(() => render()).catch((error) => {
-    document.body.textContent = `Attachment Compass could not start: ${error.message}`;
+  $("lock-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const value = $("lock-input").value.trim();
+    if (!value) return;
+    localStorage.setItem(AUTH_KEY, value);
+    hideLock();
   });
+
+  refreshState();
+  api("/api/content")
+    .then((c) => { state.content = c; renderContent(); })
+    .catch(() => {});
+  render();
 }
 
 init();

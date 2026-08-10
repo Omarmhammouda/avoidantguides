@@ -407,6 +407,24 @@ body {
 }
 .primary-btn:disabled { opacity: 0.5; cursor: default; }
 
+/* ── Lock screen ─────────────────────────────────────────── */
+.lock-modal { text-align: center; width: min(400px, 100%); }
+.lock-mark { width: 44px; height: 44px; border-radius: 12px; margin-bottom: 12px; }
+.lock-modal h2 { font-size: 1.1rem; font-weight: 720; }
+.lock-sub { color: var(--text-2); font-size: 0.85rem; margin: 8px 0 18px; line-height: 1.5; }
+#lock-form { display: flex; flex-direction: column; gap: 10px; }
+#lock-form input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit; font-size: 0.95rem;
+  padding: 11px 13px;
+  outline: none;
+  text-align: center;
+}
+#lock-form input:focus { border-color: var(--amber); }
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 900px) {
   .sidebar { position: fixed; z-index: 30; height: 100dvh; transform: translateX(-100%); transition: transform 0.2s; }

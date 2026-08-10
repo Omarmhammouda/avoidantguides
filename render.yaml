@@ -1,0 +1,16 @@
+# Render Blueprint — deploy Attachment Compass with one click.
+# In Render: New + → Blueprint → connect this repo → set the two env vars.
+services:
+  - type: web
+    name: attachment-compass
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.mjs
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false # paste your key from console.anthropic.com in the Render dashboard
+      - key: COMPASS_PASSWORD
+        sync: false # pick any password — required to ask questions on the public URL
+      - key: COMPASS_MODEL
+        value: claude-opus-5

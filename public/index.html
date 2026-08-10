@@ -150,6 +150,19 @@
     </div>
   </div>
 
+  <!-- ACCESS LOCK (shown when the server requires a password) -->
+  <div class="modal-backdrop hidden" id="lock">
+    <div class="modal lock-modal">
+      <img src="/art/favicon.png" alt="" class="lock-mark" />
+      <h2>This Compass is private</h2>
+      <p class="lock-sub">Enter the access password to ask questions. Your conversations stay in this browser either way.</p>
+      <form id="lock-form">
+        <input type="password" id="lock-input" placeholder="Access password" autocomplete="current-password" />
+        <button type="submit" class="primary-btn">Unlock</button>
+      </form>
+    </div>
+  </div>
+
   <script src="/app.js"></script>
 </body>
 </html>
