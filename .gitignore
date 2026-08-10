@@ -1,0 +1,4 @@
+# Personal conversations stay local — never commit them.
+data/
+.DS_Store
+node_modules/
