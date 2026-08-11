@@ -6,6 +6,9 @@
   "name": "avoidantguides",
   "account_id": "6dd9223d7f1c9f07d55e34d96f48f223",
   "main": "worker.mjs",
+  "build": {
+    "command": "node scripts/sync-secrets.mjs"
+  },
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
