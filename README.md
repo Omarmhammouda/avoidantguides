@@ -13,24 +13,27 @@ nothing personal. Two answer engines, picked automatically:
 | **Claude API** (`claude-opus-5`) | `ANTHROPIC_API_KEY` is set — use this for hosted deployments | Billed to your Anthropic API account; the knowledge base is prompt-cached, so typical questions cost a few cents |
 | **`claude` CLI** | No API key set — local use | Uses your Claude Code subscription |
 
-## Deploy to the web (Render, free)
+## Deploy to the web (Cloudflare Workers, free)
 
-1. Create an [Anthropic API key](https://console.anthropic.com/settings/keys)
-   (add a few dollars of credit).
-2. Sign in at [render.com](https://render.com) with GitHub → **New + → Blueprint**
-   → pick this repository. Render reads `render.yaml` automatically.
-3. When prompted, set:
-   - `ANTHROPIC_API_KEY` — your key from step 1
-   - `COMPASS_PASSWORD` — any password; the app asks for it once per browser
-     so strangers can't spend your credits
-4. Deploy. Your app is live at `https://<name>.onrender.com`.
+The repo ships a Worker entry (`worker.mjs` + `wrangler.jsonc`). One-time setup:
 
-The same setup works on Railway, Fly.io, or any Node host: `npm install`,
-`node server.mjs`, and the three env vars above.
+```bash
+npx wrangler login          # opens the browser to authorize Cloudflare
+npm install && npm run deploy
+npx wrangler secret put ANTHROPIC_API_KEY   # paste your key from console.anthropic.com
+npx wrangler secret put COMPASS_PASSWORD    # pick any password for the unlock screen
+```
 
-> Free-tier note: Render spins the service down after idle periods — the first
-> question after a pause takes ~30s while it wakes. Conversations are safe
-> either way (they're in your browser, not on the server).
+Your app is live at `https://attachment-compass.<your-subdomain>.workers.dev`.
+Later code changes ship with just `npm run deploy`. No cold starts, and the
+free plan (100k requests/day) is far more than personal use needs.
+
+Alternative: in the Cloudflare dashboard, **Workers & Pages → Create →
+Import a repository** → pick this repo (it reads `wrangler.jsonc`), then add
+the two secrets under Settings → Variables and Secrets.
+
+Also works on Render/Railway/Fly via the Node server (`render.yaml` included):
+`npm install`, `node server.mjs`, same env vars.
 
 ## Run locally
 

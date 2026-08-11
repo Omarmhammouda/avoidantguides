@@ -5,12 +5,17 @@
   "type": "module",
   "description": "Personal Q&A app about avoidant-attachment relationships, grounded in the Guided Awareness knowledge base.",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "deploy": "wrangler deploy",
+    "dev:cf": "wrangler dev"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
   }
 }

@@ -1,0 +1,23 @@
+// Cloudflare Workers config — deploy with `npx wrangler deploy`.
+// Secrets (set once): npx wrangler secret put ANTHROPIC_API_KEY
+//                     npx wrangler secret put COMPASS_PASSWORD
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "attachment-compass",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "rules": [
+    { "type": "Text", "globs": ["**/*.md"], "fallthrough": true }
+  ],
+  "vars": {
+    "COMPASS_MODEL": "claude-opus-5"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
