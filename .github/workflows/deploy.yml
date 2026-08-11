@@ -1,0 +1,40 @@
+# Auto-deploy to Cloudflare Workers on push — from GitHub's side.
+# Self-arming: skips quietly until a CLOUDFLARE_API_TOKEN secret exists in
+# this repo (GitHub → Settings → Secrets and variables → Actions). Create the
+# token at dash.cloudflare.com/profile/api-tokens ("Edit Cloudflare Workers"
+# template). Until then, the local git pre-push hook handles deploys.
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for deploy token
+        id: token
+        run: echo "present=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - name: Skip (no token configured)
+        if: steps.token.outputs.present != 'true'
+        run: echo "CLOUDFLARE_API_TOKEN not set — skipping; the local git hook handles deploys."
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.present == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.token.outputs.present == 'true'
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+        if: steps.token.outputs.present == 'true'
+      - name: Deploy
+        if: steps.token.outputs.present == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

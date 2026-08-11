@@ -24,9 +24,17 @@ npx wrangler secret put ANTHROPIC_API_KEY   # paste your key from console.anthro
 npx wrangler secret put COMPASS_PASSWORD    # pick any password for the unlock screen
 ```
 
-Your app is live at `https://attachment-compass.<your-subdomain>.workers.dev`.
-Later code changes ship with just `npm run deploy`. No cold starts, and the
-free plan (100k requests/day) is far more than personal use needs.
+Your app is live at `https://avoidantguides.<your-subdomain>.workers.dev`.
+No cold starts, and the free plan (100k requests/day) is far more than
+personal use needs.
+
+**Auto-deploy** is set up two ways:
+- A git `pre-push` hook deploys on every `git push` from your machine
+  (one-time enable per clone: `git config core.hooksPath .githooks`).
+- A GitHub Actions workflow deploys from GitHub's side once you add a
+  `CLOUDFLARE_API_TOKEN` repo secret (it skips quietly until then).
+
+Manual deploys remain `npm run deploy`.
 
 Alternative: in the Cloudflare dashboard, **Workers & Pages → Create →
 Import a repository** → pick this repo (it reads `wrangler.jsonc`), then add

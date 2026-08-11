@@ -1,0 +1,10 @@
+#!/bin/sh
+# Auto-deploy to Cloudflare Workers on every push.
+# Enabled via: git config core.hooksPath .githooks  (see README)
+echo "→ Deploying to Cloudflare Workers…"
+if npx wrangler deploy; then
+  echo "✓ Deployed to Cloudflare."
+else
+  echo "⚠ Cloudflare deploy failed — pushing anyway. Run 'npm run deploy' manually." >&2
+fi
+exit 0
