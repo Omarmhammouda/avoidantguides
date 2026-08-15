@@ -1,226 +1,376 @@
 {
  "suggested_questions": [
-  "He's been pulling away ever since we talked about moving in together \u2014 did I ruin it?",
-  "She shuts down mid-argument and acts totally normal the next day. Does she even care?",
-  "We broke up two weeks ago and he seems fine, almost happy. Did I mean anything to him?",
-  "He came back after 3 months of silence \u2014 what does it mean and what do I do now?",
-  "She texts me all week but keeps canceling our weekend plans. Is she hiding something?",
-  "We act like a couple but he won't call it one. How do I get out of the friendzone?",
-  "I feel like a placeholder. How do I know if she actually loves me?",
-  "How do I bring up marriage without making him run?"
+  "He started pulling away right after we talked about moving in together — did I push too fast?",
+  "She shuts down mid-argument and acts totally normal the next day. Do I bring it back up?",
+  "He gives me little random gifts and insists they mean nothing. Am I reading too much into it?",
+  "We act like a couple but he won't call it one. How long should I wait for a label?",
+  "It's been 25 days of no contact and he hasn't reached out once. Is it working?",
+  "My ex blocked me on everything. Do I wait it out, or is that my answer?",
+  "She said she never loved me the day she left. How much of that should I believe?",
+  "He came back after four months but nothing about him seems different. Do I let him in?"
  ],
  "topics": [
   {
    "label": "Pulling away",
-   "description": "Why avoidants withdraw right when things get close, and how to respond without chasing."
+   "description": "Why avoidants withdraw exactly when things get close — often right at a milestone — and how to give space without chasing or blaming yourself."
   },
   {
    "label": "Fights & shutdown",
-   "description": "What to do when they go silent mid-conflict \u2014 and why next-day normalcy isn't indifference."
-  },
-  {
-   "label": "Breakup & silence",
-   "description": "How avoidants actually grieve, what their 'I'm fine' phase hides, and what no contact looks like from their side."
-  },
-  {
-   "label": "They came back",
-   "description": "How to handle an avoidant's return \u2014 going slow, reading their tests, and not repeating the cycle."
-  },
-  {
-   "label": "Am I a placeholder?",
-   "description": "The concrete signs that separate genuine avoidant love from a convenience dynamic."
+   "description": "What to do when they stonewall mid-conflict: space during the flood, words after it, and why next-day normalcy isn't indifference."
   },
   {
    "label": "Signs of love",
-   "description": "The subtle, easy-to-miss ways avoidants show deep attachment through actions instead of words."
+   "description": "The easy-to-miss ways avoidants show attachment — acts of service, small gifts they immediately downplay, and things they've told no one else."
   },
   {
    "label": "Mixed signals & tests",
-   "description": "Decoding hot-and-cold behavior, deliberate 'no's, and the subconscious vetting avoidants run."
+   "description": "Decoding hot-and-cold behavior and deliberate \"no\"s — and where subconscious vetting crosses into a gauntlet you shouldn't try to endure."
+  },
+  {
+   "label": "Am I a placeholder?",
+   "description": "The concrete contrasts that separate real avoidant love from a convenience dynamic, including consistent time together that never becomes closeness."
   },
   {
    "label": "Getting commitment",
-   "description": "Making commitment feel safe for an avoidant \u2014 specific reassurance and steady pacing, without pressure or games."
+   "description": "Making each step feel safe: specific reassurance, honest pacing, and spacing out the milestones that tend to set off the exit."
   },
   {
    "label": "Boundaries & self-respect",
-   "description": "Stating your needs directly and building the self-esteem that avoidants respond to \u2014 without ultimatums or self-abandonment."
+   "description": "Saying what you need plainly, without ultimatums or self-abandonment — the one variable on your side that changes the dynamic most."
   },
   {
    "label": "When to walk away",
-   "description": "The red flags that mean this isn't an attachment problem to fix, and how to leave without anger."
+   "description": "The red flags that mean this isn't an attachment problem to repair, and how to leave without anger or waiting it out for years."
+  },
+  {
+   "label": "After the breakup",
+   "description": "How avoidants actually grieve — the early relief that isn't indifference, the delayed crash, and why a fast rebound proves nothing."
+  },
+  {
+   "label": "The no contact rule",
+   "description": "What the silence is actually for, how long it usually runs, and what tends to happen on their side week by week."
+  },
+  {
+   "label": "Blocked or ghosted",
+   "description": "How to read being blocked, ghosted, or slowly faded out — and what a lasting block honestly tells you about the door."
+  },
+  {
+   "label": "Coming back or gone?",
+   "description": "The signals that a breakup isn't permanent, the ones that say it is, and how to decide whether you even want them back."
   }
  ],
  "videos": [
   {
    "id": "9pX1IZXNIp8",
    "title": "if an AVOIDANT says THIS to you, you are the ONE",
-   "views": "53K views"
+   "views": "53K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "REDcvg91Vl0",
    "title": "THIS means AVOIDANT wants YOU to REACH OUT",
-   "views": "41K views"
+   "views": "41K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "IkZ1v_GXucU",
    "title": "FOOLPROOF way to get ANY AVOIDANT to COMMIT forever",
-   "views": "38K views"
+   "views": "38K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "2K0122m1eZk",
    "title": "How Avoidants Treat The One They Truly Love vs The Placeholder",
-   "views": "36K views"
+   "views": "36K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "vX2kZZXVh8M",
    "title": "Avoidants Deeply Regret Leaving People Who Do These 4 Things",
-   "views": "36K views"
+   "views": "36K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "z6Q-Pb_olGI",
    "title": "AVOIDANTS ONLY do THIS when they TRULY LOVE",
-   "views": "27K views"
+   "views": "27K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "hfbwXiZOuRw",
    "title": "Therapist explains:  THIS means an AVOIDANT feels DEEP, AUTHENTIC LOVE for you",
-   "views": "27K views"
+   "views": "27K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "eBy3j7NgUd4",
    "title": "AVOIDANTS BOND to this SPECIFIC person FOREVER ...! ! !",
-   "views": "26K views"
+   "views": "26K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "OGlc00vb54Y",
    "title": "How an Avoidant Acts When They Truly Fall in Love with You",
-   "views": "25K views"
+   "views": "25K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "-k6afa0jGtg",
    "title": "How Avoidants Treat Someone They Genuinely Love vs A Placeholder",
-   "views": "25K views"
+   "views": "25K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "2vIp7IQqq2M",
    "title": "how AVOIDANT acts when they feel GUILTY they HURT YOU",
-   "views": "25K views"
+   "views": "25K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "Bs7tSvTag7Y",
-   "title": "THIS means an AVOIDANT is FALLING in LOVE with YOU\u2026",
-   "views": "24K views"
+   "title": "THIS means an AVOIDANT is FALLING in LOVE with YOU…",
+   "views": "24K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "zITZ7f7BKl4",
    "title": "The Type of Person Avoidants Always Go Back To",
-   "views": "24K views"
+   "views": "24K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "f79fpJ_T8tc",
    "title": "this TRIGGERS an AVOIDANT to CRAVE your PRESENCE",
-   "views": "24K views"
+   "views": "24K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "wPzpmO_S2_4",
    "title": "if THIS is happening, AVOIDANT is not SERIOUS about you",
-   "views": "22K views"
+   "views": "22K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "ajcFEAse07E",
    "title": "How an Avoidant Shows Pain After Losing the Right Person",
-   "views": "22K views"
+   "views": "22K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "9LNyOuEkq1M",
    "title": "AVOIDANTS feel GENUINE, DEEP LOVE towards THIS person",
-   "views": "22K views"
+   "views": "22K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "dNEUwnXHmqo",
    "title": "AVOIDANTS are MADLY IN LOVE with THIS SPECIFIC PERSON",
-   "views": "21K views"
+   "views": "21K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "vZ81mA6zliE",
    "title": "How To DETACH to Become The One For An AVOIDANT",
-   "views": "21K views"
+   "views": "21K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "eELRbUjV0_w",
    "title": "USE THIS to get out of FRIENDZONE FAST with AVOIDANT",
-   "views": "21K views"
+   "views": "21K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "TVsW5EngYBw",
    "title": "AVOIDANTS OBSESS over people like THIS",
-   "views": "21K views"
+   "views": "21K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "EBMGs83o-uk",
    "title": "AVOIDANTS test you when they LOVE you",
-   "views": "21K views"
+   "views": "21K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "jyjP61r-5RM",
    "title": "this SPECIFIC person is SO MAGNETIC, AVOIDANTS NEVER want to LEAVE",
-   "views": "20K views"
+   "views": "20K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "0R3pTS7xIbU",
    "title": "THIS means an AVOIDANT LOVES YOU",
-   "views": "20K views"
+   "views": "20K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "WJovYgK5vWY",
    "title": "Therapist explains:  doing THIS makes AVOIDANTS CHANGE and open to LOVE",
-   "views": "20K views"
+   "views": "20K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "rSxINeybtSc",
    "title": "How to Make an Avoidant Love You Forever",
-   "views": "18K views"
+   "views": "18K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "5L2eaZp20ko",
    "title": "Avoidants Start Missing You When They Realize This Truth",
-   "views": "18K views"
+   "views": "18K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "F3G002-2XmU",
    "title": "How Avoidants Act When You are Just an Option vs The One",
-   "views": "18K views"
+   "views": "18K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "k0Z815AeCUw",
    "title": "THIS happens when AVOIDANT knows YOURE the ONE",
-   "views": "18K views"
+   "views": "18K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "4ypZEuN0kW4",
    "title": "Therapist explains: doing THIS ATTRACTS the AVOIDANT",
-   "views": "17K views"
+   "views": "17K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "Wr9iW1wg1bw",
    "title": "Why Avoidants Avoid Seeing You In Person",
-   "views": "17K views"
+   "views": "17K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "eCvdVy0F8mQ",
    "title": "If An Avoidant Reacts Like This, You Already HAVE Them",
-   "views": "17K views"
+   "views": "17K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "EzRoeBJkgbo",
    "title": "Therapist explains:  THIS means AVOIDANT doesn't LOVE you",
-   "views": "16K views"
+   "views": "16K views",
+   "channel": "Guided Awareness"
   },
   {
    "id": "wgs4Pqc9AtE",
-   "title": "Avoidant Came Back\u2026 Here\u2019s What Happens Next",
-   "views": ""
+   "title": "Avoidant Came Back… Here’s What Happens Next",
+   "views": "",
+   "channel": "Guided Awareness"
+  },
+  {
+   "id": "JSkrdgzL31s",
+   "title": "The Psychology Of A Man During The No Contact Rule",
+   "views": "1.3M views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "_yGwCWM7IgI",
+   "title": "Why Most Avoidants Come Back After No Contact",
+   "views": "902K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "RKRoOGJG2p4",
+   "title": "This Is What Happens When You Stop Chasing An Avoidant",
+   "views": "886K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "c49BCYOLVgg",
+   "title": "The Moment An Avoidant Realizes They Lost You (THIS Will Happen)",
+   "views": "702K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "ZUVGAzEKaBc",
+   "title": "Avoidants Secretly Hope You Do THIS When They Stonewall",
+   "views": "593K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "rLKWE9Hdx-s",
+   "title": "Signs An Avoidant Loves You",
+   "views": "548K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "DLerkzXRdrw",
+   "title": "5 Signs That He's Hurting After A Breakup (Guys Behavior After The Breakup))",
+   "views": "473K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "jJdx72OERXc",
+   "title": "If An Avoidant Does THIS, They’re Not Coming Back",
+   "views": "465K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "J7viPv184os",
+   "title": "How To Make An Avoidant Ex Miss You",
+   "views": "435K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "ZY37suc5vpQ",
+   "title": "6 Signs Your Ex DOESN'T Want You Back (And What To Do About It)",
+   "views": "408K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "RuSw_RP2ceQ",
+   "title": "Why Almost All Avoidants Return After Rejecting You",
+   "views": "391K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "BBFKlNvlCEI",
+   "title": "Avoidants Always Use The Same 3 Tests Before They Let You In Emotionally",
+   "views": "363K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "7Jp4CRVdUfc",
+   "title": "My Ex Blocked Me On Everything (How To Get Unblocked)",
+   "views": "361K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "vTo-fUVfriM",
+   "title": "The Weird Things Avoidants Do If They Like You",
+   "views": "338K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "slYW4GeoSpg",
+   "title": "6 Unconscious Traits That Attract Avoidants",
+   "views": "325K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "8B97SKNKDu0",
+   "title": "Games Avoidants Play When They're In Love With You",
+   "views": "323K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "iCKMgtIveD8",
+   "title": "6 Signs Your Breakup IS NOT Permanent",
+   "views": "316K views",
+   "channel": "Chris Seiter"
+  },
+  {
+   "id": "IPK_0HZLrYo",
+   "title": "What Narcissists Hope For When You Go No Contact",
+   "views": "294K views",
+   "channel": "Chris Seiter"
   }
  ],
  "scenarios": [
@@ -233,40 +383,40 @@
     "/art/scenario-02.jpg",
     "/art/scenario-03.jpg"
    ],
-   "question": "My partner has been pulling away \u2014 less texting, no plans, more distance. What's happening psychologically, and what should I do (and not do) right now?"
+   "question": "My partner has been pulling away — fewer texts, no plans, more distance — and it started not long after we took a step forward together. What's actually happening on their side, how much space should I give before I say anything, and what should I avoid doing right now?"
   },
   {
    "id": "came-back",
    "title": "They came back",
-   "subtitle": "After the silence they reached out \u2014 and you're unsure what to do",
+   "subtitle": "After the silence they reached out — and you're unsure what to do",
    "images": [
     "/art/scenario-04.jpg",
     "/art/scenario-05.jpg",
     "/art/scenario-06.jpg"
    ],
-   "question": "My avoidant ex came back after a period of silence. How should I handle their return so we don't fall back into the same on-and-off pattern?"
+   "question": "My avoidant ex reached out after months of silence and wants to talk, but hasn't really explained anything. How do I tell whether anything has actually changed, how slowly should I move, and what shouldn't I bring up yet — so we don't just restart the same on-and-off cycle?"
   },
   {
    "id": "mixed-signals",
    "title": "Mixed signals",
-   "subtitle": "Warm one week, distant the next \u2014 decode what it means",
+   "subtitle": "Warm one week, distant the next — decode what it means",
    "images": [
     "/art/scenario-07.jpg",
     "/art/scenario-08.jpg",
     "/art/scenario-09.jpg"
    ],
-   "question": "I'm getting mixed signals \u2014 close and warm one week, cold and distant the next. How do I tell whether this is avoidant deactivation or genuine disinterest?"
+   "question": "I'm getting mixed signals — warm and close one week, cold and distant the next, and lately they seem to be testing me in small ways. How do I tell whether this is avoidant deactivation, subconscious vetting, or genuine disinterest — and when does it stop being worth decoding?"
   },
   {
    "id": "make-it-work",
    "title": "Making it work",
-   "subtitle": "You're staying \u2014 build safety, boundaries, and a real bond",
+   "subtitle": "You're staying — build safety, boundaries, and a real bond",
    "images": [
     "/art/scenario-10.jpg",
     "/art/scenario-11.jpg",
     "/art/scenario-12.jpg"
    ],
-   "question": "I want to make this relationship work long-term. How do I build the kind of safety and boundaries that help an avoidant partner stay connected to me?"
+   "question": "I want to make this work long term. How do I build enough safety that my avoidant partner stays connected — pacing the big milestones, giving space without disappearing, and asking for what I need — without losing myself or waiting forever for things to change?"
   }
  ]
 }

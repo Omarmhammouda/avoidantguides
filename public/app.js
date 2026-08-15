@@ -398,16 +398,39 @@ function renderContent() {
   }
   const videos = $("videos");
   videos.textContent = "";
+  // Group the catalog by source channel so each block is attributable.
+  const byChannel = new Map();
   for (const v of c.videos) {
-    const row = document.createElement("a");
-    row.className = "video-row";
-    row.href = `https://www.youtube.com/watch?v=${v.id}`;
-    row.target = "_blank";
-    row.rel = "noreferrer noopener";
-    const title = document.createElement("span"); title.className = "v-title"; title.textContent = v.title;
-    const views = document.createElement("span"); views.className = "v-views"; views.textContent = v.views || "↗";
-    row.append(title, views);
-    videos.appendChild(row);
+    const key = v.channel ?? "Guided Awareness";
+    if (!byChannel.has(key)) byChannel.set(key, []);
+    byChannel.get(key).push(v);
+  }
+  for (const [channel, list] of byChannel) {
+    const head = document.createElement("div");
+    head.className = "channel-head";
+    const name = document.createElement("span");
+    name.className = "channel-name";
+    name.textContent = channel;
+    const count = document.createElement("span");
+    count.className = "channel-count";
+    count.textContent = `${list.length} videos`;
+    head.append(name, count);
+    videos.appendChild(head);
+
+    const group = document.createElement("div");
+    group.className = "video-list";
+    for (const v of list) {
+      const row = document.createElement("a");
+      row.className = "video-row";
+      row.href = `https://www.youtube.com/watch?v=${v.id}`;
+      row.target = "_blank";
+      row.rel = "noreferrer noopener";
+      const title = document.createElement("span"); title.className = "v-title"; title.textContent = v.title;
+      const views = document.createElement("span"); views.className = "v-views"; views.textContent = v.views || "↗";
+      row.append(title, views);
+      group.appendChild(row);
+    }
+    videos.appendChild(group);
   }
 }
 
