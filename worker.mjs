@@ -6,6 +6,7 @@
 //   ANTHROPIC_API_KEY — required; powers answers
 //   COMPASS_PASSWORD  — recommended; gates /api/ask behind an unlock screen
 import Anthropic from "@anthropic-ai/sdk";
+import { imageNote, sanitizeImages, userContent } from "./lib/images.mjs";
 import SYSTEM_PROMPT from "./knowledge/system-prompt.md";
 import KNOWLEDGE from "./knowledge/knowledge.md";
 import CONTENT from "./content.json";
@@ -21,7 +22,7 @@ const json = (status, body) =>
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 
-function buildMessages(situation, history, question) {
+function buildMessages(situation, history, question, images) {
   const profile = [
     `Name they gave this situation: ${situation.name}`,
     situation.stage ? `Relationship stage: ${situation.stage}` : null,
@@ -37,9 +38,10 @@ function buildMessages(situation, history, question) {
       "(No situation profile yet — gently invite them to add context when it would sharpen the answer.)",
   ].join("\n");
 
+  const text = `${situationBlock}\n\n## NEW QUESTION\n${question}${imageNote(images.length)}`;
   return [
     ...history.slice(-24).map((m) => ({ role: m.role, content: m.content })),
-    { role: "user", content: `${situationBlock}\n\n## NEW QUESTION\n${question}` },
+    { role: "user", content: userContent(text, images) },
   ];
 }
 
@@ -58,7 +60,8 @@ async function handleAsk(request, env, ctx) {
   try {
     body = await request.json();
   } catch {}
-  const question = clean(body?.question, 4000);
+  const images = sanitizeImages(body?.images);
+  const question = clean(body?.question, 4000) || (images.length > 0 ? "What do you make of this?" : "");
   if (!question) return json(400, { error: "Write a question first." });
 
   const situation = {
@@ -97,7 +100,7 @@ async function handleAsk(request, env, ctx) {
           betas: ["server-side-fallback-2026-07-01"],
           fallbacks: "default",
           system: [{ type: "text", text: FULL_SYSTEM, cache_control: { type: "ephemeral" } }],
-          messages: buildMessages(situation, history, question),
+          messages: buildMessages(situation, history, question, images),
         });
 
         for await (const event of stream) {

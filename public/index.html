@@ -46,13 +46,18 @@
           </p>
 
           <div class="dock" id="home-dock">
-            <textarea id="home-question" rows="2" placeholder="Ask about your situation — what happened, what it means, what to do…"></textarea>
+            <textarea id="home-question" rows="2" placeholder="Ask about your situation, or paste a screenshot of the messages…"></textarea>
+            <div class="attach-strip hidden" id="home-attachments"></div>
             <div class="dock-row">
+              <button class="attach-btn" id="home-attach" title="Attach a screenshot" aria-label="Attach a screenshot">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </button>
               <select id="home-target" class="pill-select" title="Which situation to ask in"></select>
               <button class="ask-btn" id="home-ask">Ask ✦</button>
             </div>
+            <input type="file" id="home-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
           </div>
-          <p class="hint">Educational patterns from a therapist's public channel — not therapy or a diagnosis.</p>
+          <p class="hint">Educational patterns from two coaches' public channels — not therapy or a diagnosis.</p>
           <div class="chips" id="suggested"></div>
 
           <h2 class="row-title">Start from a scenario</h2>
@@ -81,11 +86,16 @@
           </div>
         </div>
         <div class="dock dock-float" id="thread-dock">
-          <textarea id="thread-question" rows="2" placeholder="Ask a follow-up…"></textarea>
+          <textarea id="thread-question" rows="2" placeholder="Ask a follow-up, or paste a screenshot…"></textarea>
+          <div class="attach-strip hidden" id="thread-attachments"></div>
           <div class="dock-row">
+            <button class="attach-btn" id="thread-attach" title="Attach a screenshot" aria-label="Attach a screenshot">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
             <span class="dock-note" id="thread-note"></span>
             <button class="ask-btn" id="thread-ask">Ask ✦</button>
           </div>
+          <input type="file" id="thread-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden />
         </div>
       </section>
 
@@ -112,6 +122,8 @@
       </section>
     </main>
   </div>
+
+  <div class="dock-error hidden" id="dock-error" role="status" aria-live="polite"></div>
 
   <!-- SITUATION MODAL -->
   <div class="modal-backdrop hidden" id="modal">

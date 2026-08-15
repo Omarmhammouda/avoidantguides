@@ -10,11 +10,113 @@ const state = {
   situations: [],            // summaries (computed from store)
   content: null,
   messages: [],              // for the open thread
-  asking: null,              // { situationId, question, answer }
+  asking: null,              // { situationId, question, answer, images }
   editingId: null,
   pendingAsk: null,
   locked: false,
+  attachments: [],           // [{id, full:{media_type,data}, thumb:dataURL, name}]
 };
+
+/* ── image attachments ────────────────────────────────────── */
+const MAX_ATTACHMENTS = 4;
+const SEND_MAX_EDGE = 1400;   // long edge sent to the model (vision-friendly)
+const THUMB_MAX_EDGE = 360;   // long edge kept in localStorage
+const ACCEPTED = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(new Error("Could not read that file."));
+    fr.readAsDataURL(file);
+  });
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("That file isn't a readable image."));
+    img.src = src;
+  });
+}
+
+/** Downscale to a max long edge and re-encode as JPEG. */
+function rescale(img, maxEdge, quality) {
+  const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * scale));
+  const h = Math.max(1, Math.round(img.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  // Screenshots are usually light-on-white; flatten alpha so JPEG doesn't go black.
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function addFiles(fileList) {
+  const files = [...fileList].filter((f) => ACCEPTED.includes(f.type));
+  if (files.length === 0) return;
+  for (const file of files) {
+    if (state.attachments.length >= MAX_ATTACHMENTS) {
+      showDockError(`You can attach up to ${MAX_ATTACHMENTS} images per question.`);
+      break;
+    }
+    try {
+      const img = await loadImage(await readFileAsDataURL(file));
+      const sendUrl = rescale(img, SEND_MAX_EDGE, 0.85);
+      state.attachments.push({
+        id: newId(),
+        name: file.name || "screenshot",
+        thumb: rescale(img, THUMB_MAX_EDGE, 0.7),
+        full: { media_type: "image/jpeg", data: sendUrl.split(",")[1] },
+      });
+    } catch (error) {
+      showDockError(error.message);
+    }
+  }
+  renderAttachments();
+}
+
+function removeAttachment(id) {
+  state.attachments = state.attachments.filter((a) => a.id !== id);
+  renderAttachments();
+}
+
+function renderAttachments() {
+  for (const key of ["home", "thread"]) {
+    const strip = $(`${key}-attachments`);
+    if (!strip) continue;
+    strip.textContent = "";
+    strip.classList.toggle("hidden", state.attachments.length === 0);
+    for (const a of state.attachments) {
+      const item = document.createElement("div");
+      item.className = "attach-item";
+      const img = document.createElement("img");
+      img.src = a.thumb; img.alt = a.name;
+      const remove = document.createElement("button");
+      remove.className = "attach-remove";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.title = "Remove";
+      remove.setAttribute("aria-label", `Remove ${a.name}`);
+      remove.onclick = () => removeAttachment(a.id);
+      item.append(img, remove);
+      strip.appendChild(item);
+    }
+  }
+}
+
+function showDockError(message) {
+  const el = $("dock-error");
+  if (!el) return;
+  el.textContent = message;
+  el.classList.remove("hidden");
+  window.clearTimeout(showDockError._t);
+  showDockError._t = window.setTimeout(() => el.classList.add("hidden"), 5000);
+}
 
 /* ── local store ──────────────────────────────────────────── */
 const STORE_KEY = "attachment-compass-v1";
@@ -193,14 +295,29 @@ function authHeaders() {
 async function ask(situationId, question) {
   const q = question.trim();
   const situation = situationById(situationId);
-  if (!q || !situation || state.asking) return;
-  state.asking = { situationId, question: q, answer: "" };
+  const attachments = state.attachments;
+  // A screenshot alone is a valid question — supply the implied one.
+  if ((!q && attachments.length === 0) || !situation || state.asking) return;
+  const asked = q || "What do you make of this?";
+  state.asking = {
+    situationId,
+    question: asked,
+    answer: "",
+    thumbs: attachments.map((a) => a.thumb),
+  };
+  state.attachments = [];
+  renderAttachments();
   $("home-question").value = "";
   $("thread-question").value = "";
   const store = loadStore();
   const history = (store.messages[situationId] ?? []).map((m) => ({
     role: m.role,
-    content: m.content,
+    // Past images are not re-sent (cost + only thumbnails are kept); note that
+    // one existed so the model doesn't treat the turn as text-only.
+    content:
+      m.role === "user" && (m.images?.length || m.imagesDropped)
+        ? `[shared a screenshot] ${m.content}`
+        : m.content,
   }));
   if (state.view !== situationId) openThread(situationId);
   else render();
@@ -211,7 +328,7 @@ async function ask(situationId, question) {
       method: "POST",
       headers: { "content-type": "application/json", ...authHeaders() },
       body: JSON.stringify({
-        question: q,
+        question: asked,
         situation: {
           name: situation.name,
           profile: situation.profile,
@@ -219,12 +336,15 @@ async function ask(situationId, question) {
           stage: situation.stage,
         },
         history,
+        images: attachments.map((a) => a.full),
       }),
     });
     if (res.status === 401) {
       state.asking = null;
-      $("home-question").value = q;
-      $("thread-question").value = q;
+      state.attachments = attachments; // give the images back so nothing is lost
+      renderAttachments();
+      $("home-question").value = asked;
+      $("thread-question").value = asked;
       showLock();
       render();
       return;
@@ -244,13 +364,14 @@ async function ask(situationId, question) {
         scrollThread(true);
       }
     }
-    persistExchange(situationId, q, state.asking?.answer ?? "");
+    persistExchange(situationId, asked, state.asking?.answer ?? "", state.asking?.thumbs ?? []);
   } catch (error) {
     persistExchange(
       situationId,
-      q,
+      asked,
       (state.asking?.answer ? state.asking.answer + "\n\n" : "") +
         `**Something went wrong:** ${error.message}`,
+      state.asking?.thumbs ?? [],
     );
   } finally {
     state.asking = null;
@@ -263,12 +384,14 @@ async function ask(situationId, question) {
   }
 }
 
-function persistExchange(situationId, question, answer) {
+function persistExchange(situationId, question, answer, thumbs = []) {
   const store = loadStore();
   if (!store.situations.some((s) => s.id === situationId)) return;
   const now = new Date().toISOString();
   const thread = store.messages[situationId] ?? (store.messages[situationId] = []);
-  thread.push({ id: newId(), role: "user", content: question, createdAt: now });
+  const userMsg = { id: newId(), role: "user", content: question, createdAt: now };
+  if (thumbs.length > 0) userMsg.images = thumbs;
+  thread.push(userMsg);
   thread.push({
     id: newId(),
     role: "assistant",
@@ -277,7 +400,29 @@ function persistExchange(situationId, question, answer) {
   });
   const situation = store.situations.find((s) => s.id === situationId);
   if (situation) situation.updatedAt = now;
-  saveStore(store);
+  try {
+    saveStore(store);
+  } catch (error) {
+    // localStorage is ~5MB; images fill it fastest. Drop the oldest stored
+    // images (text is never sacrificed) and retry before giving up.
+    if (!dropOldestImages(store)) throw error;
+    try { saveStore(store); } catch { /* text-only save also failed; leave as-is */ }
+  }
+}
+
+/** Strip images from the oldest messages that still carry them. Returns true if any were freed. */
+function dropOldestImages(store) {
+  const withImages = [];
+  for (const list of Object.values(store.messages)) {
+    for (const m of list) if (m.images?.length) withImages.push(m);
+  }
+  if (withImages.length === 0) return false;
+  withImages.sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""));
+  for (const m of withImages.slice(0, Math.max(1, Math.ceil(withImages.length / 2)))) {
+    delete m.images;
+    m.imagesDropped = true;
+  }
+  return true;
 }
 
 /* ── lock screen ──────────────────────────────────────────── */
@@ -504,29 +649,50 @@ function renderThread() {
 
   for (const m of state.messages) {
     if (m.role === "user") {
-      const wrap = document.createElement("div");
-      wrap.className = "msg-user";
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = m.content;
-      wrap.appendChild(bubble);
-      thread.appendChild(wrap);
+      thread.appendChild(userBubble(m.content, m.images ?? [], m.imagesDropped));
     } else {
       thread.appendChild(assistantCard(m.content, false));
     }
   }
   if (showAsking) {
-    const wrap = document.createElement("div");
-    wrap.className = "msg-user";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = state.asking.question;
-    wrap.appendChild(bubble);
-    thread.appendChild(wrap);
+    thread.appendChild(userBubble(state.asking.question, state.asking.thumbs ?? [], false));
     const live = assistantCard(state.asking.answer, true);
     live.id = "live-answer";
     thread.appendChild(live);
   }
+}
+
+function userBubble(text, images, imagesDropped) {
+  const wrap = document.createElement("div");
+  wrap.className = "msg-user";
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  if (images.length > 0) {
+    const grid = document.createElement("div");
+    grid.className = "msg-images";
+    for (const src of images) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "Screenshot you shared";
+      img.loading = "lazy";
+      img.onclick = () => window.open(src, "_blank", "noopener");
+      grid.appendChild(img);
+    }
+    bubble.appendChild(grid);
+  } else if (imagesDropped) {
+    const note = document.createElement("div");
+    note.className = "msg-images-dropped";
+    note.textContent = "🖼 screenshot (no longer stored)";
+    bubble.appendChild(note);
+  }
+  if (text) {
+    const p = document.createElement("div");
+    p.className = "bubble-text";
+    p.textContent = text;
+    bubble.appendChild(p);
+  }
+  wrap.appendChild(bubble);
+  return wrap;
 }
 
 function renderLiveAnswer() {
@@ -644,6 +810,37 @@ function init() {
   $("home-target").addEventListener("change", (e) => {
     if (e.target.value === "__new__") openModal(null);
   });
+
+  for (const key of ["home", "thread"]) {
+    $(`${key}-attach`).onclick = () => $(`${key}-file`).click();
+    $(`${key}-file`).addEventListener("change", (e) => {
+      addFiles(e.target.files);
+      e.target.value = "";   // let the same file be picked twice
+    });
+    // Pasting a screenshot straight into the box is the main path.
+    $(`${key}-question`).addEventListener("paste", (e) => {
+      const files = [...(e.clipboardData?.files ?? [])];
+      if (files.length === 0) return;
+      e.preventDefault();
+      addFiles(files);
+    });
+    const dock = $(`${key}-dock`);
+    dock.addEventListener("dragover", (e) => {
+      if (![...e.dataTransfer.types].includes("Files")) return;
+      e.preventDefault();
+      dock.classList.add("dragging");
+    });
+    dock.addEventListener("dragleave", (e) => {
+      if (dock.contains(e.relatedTarget)) return;
+      dock.classList.remove("dragging");
+    });
+    dock.addEventListener("drop", (e) => {
+      if (!e.dataTransfer.files.length) return;
+      e.preventDefault();
+      dock.classList.remove("dragging");
+      addFiles(e.dataTransfer.files);
+    });
+  }
   $("edit-situation").onclick = () => openModal(state.view);
   $("delete-situation").onclick = () => {
     const s = situationById(state.view);

@@ -9,6 +9,7 @@ import { createServer } from "node:http";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { imageNote, sanitizeImages, userContent } from "./lib/images.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT ?? 4877);
@@ -37,12 +38,15 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+const TOO_LARGE = Symbol("too-large");
+
 async function readBody(req) {
   const chunks = [];
   let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > 2_000_000) return null;
+    // Generous: base64 screenshots ride along in this body.
+    if (size > 24_000_000) return TOO_LARGE;
     chunks.push(chunk);
   }
   try {
@@ -61,7 +65,7 @@ function authorized(req) {
 }
 
 // ── prompt assembly ──────────────────────────────────────────────────────────
-function buildConversation(situation, history, question) {
+function buildConversation(situation, history, question, images) {
   const profile = [
     `Name they gave this situation: ${situation.name}`,
     situation.stage ? `Relationship stage: ${situation.stage}` : null,
@@ -77,7 +81,7 @@ function buildConversation(situation, history, question) {
       "(No situation profile yet — gently invite them to add context when it would sharpen the answer.)",
   ].join("\n");
 
-  return { situationBlock, history: history.slice(-24), question };
+  return { situationBlock, history: history.slice(-24), question, images };
 }
 
 // ── engine 1: Claude API (hosted) ────────────────────────────────────────────
@@ -91,11 +95,12 @@ async function getAnthropic() {
 
 async function askViaApi(conversation, onDelta) {
   const client = await getAnthropic();
-  const { situationBlock, history, question } = conversation;
+  const { situationBlock, history, question, images } = conversation;
 
+  const text = `${situationBlock}\n\n## NEW QUESTION\n${question}${imageNote(images.length)}`;
   const messages = [
     ...history.map((m) => ({ role: m.role, content: m.content })),
-    { role: "user", content: `${situationBlock}\n\n## NEW QUESTION\n${question}` },
+    { role: "user", content: userContent(text, images) },
   ];
 
   // Knowledge base is a stable prefix — cache it so repeat questions bill the
@@ -125,7 +130,13 @@ async function askViaApi(conversation, onDelta) {
 
 // ── engine 2: local claude CLI ───────────────────────────────────────────────
 function askViaCli(conversation, onDelta) {
-  const { situationBlock, history, question } = conversation;
+  const { situationBlock, history, question, images } = conversation;
+  if (images.length > 0) {
+    // The CLI engine is a text pipe — screenshots need the API path.
+    throw new Error(
+      "Screenshots need the API engine. Set ANTHROPIC_API_KEY before starting the server, or ask without the image.",
+    );
+  }
   const past = history
     .map((m) => `${m.role === "user" ? "User" : "You (Compass)"}: ${m.content}`)
     .join("\n\n");
@@ -229,7 +240,11 @@ async function handleApi(req, res, url) {
       });
     }
     const body = await readBody(req);
-    const question = clean(body?.question, 4000);
+    if (body === TOO_LARGE) {
+      return sendJson(res, 413, { error: "Those images are too large — try fewer, or smaller ones." });
+    }
+    const images = sanitizeImages(body?.images);
+    const question = clean(body?.question, 4000) || (images.length > 0 ? "What do you make of this?" : "");
     if (!question) return sendJson(res, 400, { error: "Write a question first." });
 
     const situation = {
@@ -248,7 +263,7 @@ async function handleApi(req, res, url) {
           .filter((m) => m.content !== "")
       : [];
 
-    const conversation = buildConversation(situation, history, question);
+    const conversation = buildConversation(situation, history, question, images);
 
     res.writeHead(200, {
       "content-type": "text/plain; charset=utf-8",
@@ -262,7 +277,9 @@ async function handleApi(req, res, url) {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       let advice = "Something went wrong reaching Claude — try again in a moment.";
-      if (!API_KEY && /authenticat|oauth|expired|401/i.test(message)) {
+      if (/Screenshots need the API engine/.test(message)) {
+        advice = "This local server is running on the Claude CLI, which can't read images.";
+      } else if (!API_KEY && /authenticat|oauth|expired|401/i.test(message)) {
         advice =
           "Your Claude CLI login has expired — open a terminal, run `claude`, and sign in again. Then ask again here.";
       } else if (/credit|billing|quota/i.test(message)) {
